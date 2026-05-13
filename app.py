@@ -153,6 +153,61 @@ def delete_inventory_item(item_id):
     conn.close()
     return redirect(url_for('index'))
 
+@app.route('/inventory/edit', methods=['POST'])
+def edit_inventory_item():
+    if not session.get('admin_authorized'): return redirect(url_for('index'))
+    item_id = request.form.get('item_id', type=int)
+    item_name = request.form.get('item_name')
+    category = request.form.get('category')
+    brand = request.form.get('brand')
+    stock_qty = request.form.get('stock_qty', type=int)
+    
+    conn = get_database_connection()
+    conn.execute('UPDATE Gear_Inventory SET item_name = ?, category = ?, brand = ?, stock_qty = ? WHERE item_id = ?', 
+                 (item_name, category, brand, stock_qty, item_id))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('index'))
+
+# ==========================================
+# 4b. ฟังก์ชันการจัดการทีมสาขา (Team CRUD)
+# ==========================================
+@app.route('/team/edit', methods=['POST'])
+def edit_team():
+    if not session.get('admin_authorized'): return redirect(url_for('index'))
+    team_id = request.form.get('team_id', type=int)
+    team_name = request.form.get('team_name')
+    region = request.form.get('region')
+    
+    conn = get_database_connection()
+    try:
+        conn.execute('UPDATE Teams SET team_name = ?, region = ? WHERE team_id = ?', 
+                     (team_name, region, team_id))
+        conn.commit()
+    except sqlite3.IntegrityError: pass
+    finally: conn.close()
+    return redirect(url_for('index'))
+
+# ==========================================
+# 4c. ฟังก์ชันการจัดการสมาชิก (Member CRUD)
+# ==========================================
+@app.route('/member/edit', methods=['POST'])
+def edit_member():
+    if not session.get('admin_authorized'): return redirect(url_for('index'))
+    member_id = request.form.get('member_id', type=int)
+    full_name = request.form.get('full_name')
+    email = request.form.get('email')
+    member_role = request.form.get('member_role')
+    
+    conn = get_database_connection()
+    try:
+        conn.execute('UPDATE Members SET full_name = ?, email = ?, member_role = ? WHERE member_id = ?', 
+                     (full_name, email, member_role, member_id))
+        conn.commit()
+    except sqlite3.IntegrityError: pass
+    finally: conn.close()
+    return redirect(url_for('index'))
+
 # ==========================================
 # 5. สารสนเทศสาธารณะย่อย
 # ==========================================
